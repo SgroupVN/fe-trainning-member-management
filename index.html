@@ -7,21 +7,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.14/vue.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.CSS" rel=" stylesheet" />
-    <link rel="stylesheet" href="style.css">
-
     <title>Document</title>
 </head>
 <body>
-    <div id="app">
-        <div class="container w-full flex items-center">
-            <sidebar></sidebar>
+    <div id="app" >
+        <div class="w-full flex items-center" @click="autoClosePopup">
             <div class="table px-4 mx-5 w-full">
-                
-                <div class=" flex justify-between ">
+                <div class="flex justify-between ">
                     <div class="p4">
-                        <input type="text" placeholder="Search User" class="border border-gray-300 rounded py-2 ">
+                        <input type="text" v-model="q" placeholder="Search User" class="border border-gray-300 rounded py-2 ">
                     </div>
-                    <button class="text-white font-bold py-2 px-4 rounded bg-blue-500 hover:bg-blue-700">+ Create New</button>
+                    <button class="text-white font-bold py-2 p-4 rounded bg-blue-500 hover:bg-blue-700">+ Create New</button>
                 </div>
                 <table class="w-full text-sm text-left text-gray-500 my-4">
                     <thead class="text-xs text-gray-700 uppercase py-4 bg-white">
@@ -32,7 +28,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="user in userData" :key="user" class="bg-white border-b ">
+                        <tr v-for="user in filteredUser" :key="user" class="bg-white border-b ">
                             <td class="py-4">
                                 <div class="flex items-center">
                                     <img class="w-14 rounded-full" :src="user.avatar" alt="avatar" class="w-8 h-8 rounded-full">
@@ -46,7 +42,7 @@
                                 {{ user.role }}
                             </td class="py-4">
                             <td  >
-                               <span class="rounded px-2 py-2 text-white" :class="user.status == 'active'? 'bg-green-400' : 'bg-red-400'">{{ user.status}}</span> 
+                                <span class="rounded px-2 py-2 text-white" :class="user.status == 'active'? 'bg-green-400' : 'bg-red-400'">{{ user.status}}</span> 
                             </td>
                             <td class="py-4">
                                 {{ user.lastActivity }}
@@ -54,8 +50,23 @@
                             <td>
                                 {{ user.joinDate.split('T')[0] }}
                             </td>
-                            <td>
-    
+                            <td class="relative">
+                                <button @click.stop="showPopup(user.id)" type="button" class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-white rounded-md bg-gray-500 hover:bg-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"> 
+                                    Actions 
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-2 -mr-1 text-violet-200 hover:text-violet-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div :id="'action-' + user.id" data-display="none" class="popup hidden absolute right-0 w-32 mt-1 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50 focus:outline-none">
+                                    <div class="px-1 py-1 popup">
+                                        <button class="popup hover:bg-gray-400 hover:text-white text-gray-900 group flex rounded-md items-center w-full px-2 py-2 text-sm" >
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="popup w-5 h-5 mr-2 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                            Edit 
+                                        </button>
+                                        <button @click="onDelete(user.id)" class="popup hover:bg-red-400 hover:text-white text-gray-900 group flex rounded-md items-center w-full px-2 py-2 text-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="popup w-5 h-5 mr-2 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> 
+                                            Delete 
+                                        </button>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -64,7 +75,6 @@
         </div>
     </div>
     <script src="index.js"></script>
-    </script>
     <script src="./tailwind.config.js"></script>
 </body>
 
