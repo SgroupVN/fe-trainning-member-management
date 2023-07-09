@@ -38,18 +38,7 @@
         leave-to-class="transform opacity-0 scale-95"
       >
         <MenuItems
-          class="
-            origin-top-right
-            absolute
-            right-0
-            w-48
-            shadow-lg
-            py-1
-            bg-white
-            ring-1 ring-black ring-opacity-5
-            divide-y divide-gray-200
-            focus:outline-none
-          "
+          class="origin-top-right absolute right-0 w-48 shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-200 focus:outline-none"
         >
           <div>
             <MenuItem v-slot="{ active }">
@@ -62,11 +51,9 @@
             </MenuItem>
           </div>
           <MenuItem v-slot="{ active }">
-            <router-link
-              :to="{ name: 'login' }"
-              :class="[active ? 'bg-gray-200' : '', 'block px-4 py-2 text-sm text-gray-700']"
-              >Sign out</router-link
-            >
+            <button :class="[active ? 'bg-gray-200' : '', 'block px-4 py-2 text-sm text-gray-700']" @click="logout">
+              Sign out
+            </button>
           </MenuItem>
         </MenuItems>
       </transition>
@@ -76,13 +63,27 @@
 
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
+import { useRouter } from 'vue-router'
 
 export default {
   components: {
+    // eslint-disable-next-line vue/no-reserved-component-names
     Menu,
     MenuButton,
     MenuItems,
     MenuItem,
+  },
+  setup() {
+    const router = useRouter()
+    const logout = () => {
+      localStorage.removeItem('accessToken')
+      router.push('/login')
+      console.log('Logout successfully')
+    }
+
+    return {
+      logout,
+    }
   },
 }
 </script>

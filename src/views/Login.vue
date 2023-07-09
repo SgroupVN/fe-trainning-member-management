@@ -1,23 +1,12 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
     <div class="max-w-md w-full">
       <h2 class="text-center text-2xl font-bold text-gray-800 mb-6">Sign in to your dashboard</h2>
 
-      <div>
+      <!-- <div>
         <button
-          class="
-            w-full
-            flex
-            justify-center
-            py-3
-            px-4
-            border border-gray-300
-            font-medium
-            rounded-md
-            text-gray-900
-            bg-white
-            focus:outline-none
-          "
+          class="w-full flex justify-center py-3 px-4 border border-gray-300 font-medium rounded-md text-gray-900 bg-white focus:outline-none"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="h-6 w-6 mr-2">
             <g>
@@ -48,9 +37,9 @@
         <span class="h-px w-full bg-gray-300"></span>
         <span class="px-2 text-gray-500">or</span>
         <span class="h-px w-full bg-gray-300"></span>
-      </div>
+      </div> -->
 
-      <form class="space-y-4" @submit.prevent="$router.push({ name: 'dashboard' })">
+      <form class="space-y-4" @submit.prevent="login">
         <div class="relative text-gray-400">
           <span class="absolute inset-y-0 left-0 flex items-center pl-2">
             <svg
@@ -69,20 +58,13 @@
             </svg>
           </span>
           <input
-            id="email"
-            name="email"
-            type="email"
-            autocomplete="email"
-            class="
-              w-full
-              py-4
-              text-sm text-gray-900
-              rounded-md
-              pl-10
-              border border-gray-300
-              focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10
-            "
-            placeholder="Email address"
+            id="username"
+            v-model="username"
+            name="username"
+            type="username"
+            autocomplete="username"
+            class="w-full py-4 text-sm text-gray-900 rounded-md pl-10 border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10"
+            placeholder="Username"
             required=""
           />
         </div>
@@ -106,19 +88,12 @@
           </span>
           <input
             id="password"
+            v-model="password"
             name="password"
             type="password"
             autocomplete="current-password"
             required=""
-            class="
-              w-full
-              py-4
-              text-sm text-gray-900
-              rounded-md
-              pl-10
-              border border-gray-300
-              focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10
-            "
+            class="w-full py-4 text-sm text-gray-900 rounded-md pl-10 border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10"
             placeholder="Password"
           />
         </div>
@@ -142,27 +117,14 @@
         <div>
           <button
             type="submit"
-            class="
-              group
-              relative
-              w-full
-              flex
-              justify-center
-              py-4
-              px-6
-              border border-transparent
-              font-medium
-              rounded-md
-              text-white
-              bg-indigo-600
-              hover:bg-indigo-700
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-            "
+            class="group relative w-full flex justify-center py-4 px-6 border border-transparent font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            @click="login"
           >
             Sign in
           </button>
         </div>
       </form>
+      <p v-if="isLoggedIn" class="mt-2 text-green-600">Already login successfully!</p>
 
       <div class="mt-2 text-sm text-gray-600">
         Not registered yet? <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Create an account</a>
@@ -172,5 +134,41 @@
 </template>
 
 <script>
-export default {}
+import { ref, computed } from 'vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
+
+export default {
+  setup() {
+    const router = useRouter()
+    const username = ref('')
+    const password = ref('')
+    const accessToken = ref(localStorage.getItem('accessToken'))
+    const isLoggedIn = computed(() => !!accessToken.value) // !! is used to convert a value to boolean, computed helps to update the value when accessToken.value changes
+
+    const login = () => {
+      axios
+        .post('http://localhost:3000/auth/login', {
+          username: username.value,
+          password: password.value,
+        })
+        .then((response) => {
+          if (response.data.token) {
+            localStorage.setItem('accessToken', JSON.stringify(response.data.token))
+            accessToken.value = localStorage.getItem('accessToken')
+            router.push({ name: 'dashboard', path: '/' })
+          }
+          console.log('Login successfully')
+          return response.data
+        })
+    }
+
+    return {
+      username,
+      password,
+      login,
+      isLoggedIn,
+    }
+  },
+}
 </script>
