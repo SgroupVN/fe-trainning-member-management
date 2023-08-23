@@ -118,7 +118,6 @@
           <button
             type="submit"
             class="group relative w-full flex justify-center py-4 px-6 border border-transparent font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            @click="login"
           >
             Sign in
           </button>
@@ -134,40 +133,31 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
-import axios from 'axios'
+import { computed, toRefs, reactive } from 'vue'
+import { useAuthStore } from '@/store'
 import { useRouter } from 'vue-router'
 
 export default {
   setup() {
     const router = useRouter()
-    const username = ref('')
-    const password = ref('')
-    const accessToken = ref(localStorage.getItem('accessToken'))
-    const isLoggedIn = computed(() => !!accessToken.value) // !! is used to convert a value to boolean, computed helps to update the value when accessToken.value changes
+    const authStore = useAuthStore()
 
-    const login = () => {
-      axios
-        .post('http://localhost:3000/auth/login', {
-          username: username.value,
-          password: password.value,
-        })
-        .then((response) => {
-          if (response.data.token) {
-            localStorage.setItem('accessToken', JSON.stringify(response.data.token))
-            accessToken.value = localStorage.getItem('accessToken')
-            router.push({ name: 'dashboard', path: '/' })
-          }
-          console.log('Login successfully')
-          return response.data
-        })
+    const state = reactive({
+      username: '',
+      password: '',
+      isLoggedIn: computed(() => Boolean(authStore.token)),
+    })
+
+    const login = async () => {
+      const isSuccess = await authStore.login(state.username, state.password)
+      if (isSuccess) {
+        router.push({ name: 'dashboard', path: '/' })
+      }
     }
 
     return {
-      username,
-      password,
+      ...toRefs(state),
       login,
-      isLoggedIn,
     }
   },
 }

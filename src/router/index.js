@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import auth from '@/router/auth'
+import { authentication } from '@/middleware/auth'
+
 const routes = [
   {
     path: '/',
@@ -22,11 +25,7 @@ const routes = [
       },
     ],
   },
-  {
-    path: '/login',
-    name: 'login',
-    component: () => import('@/views/Login.vue'),
-  },
+  ...auth.routes,
 ]
 
 const router = createRouter({
@@ -36,5 +35,7 @@ const router = createRouter({
   },
   routes,
 })
+
+router.beforeEach(authentication)
 
 export default router

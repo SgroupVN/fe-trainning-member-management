@@ -64,6 +64,7 @@
 <script>
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/store'
 
 export default {
   components: {
@@ -75,10 +76,11 @@ export default {
   },
   setup() {
     const router = useRouter()
+    const authStore = useAuthStore()
+
     const logout = () => {
-      localStorage.removeItem('accessToken')
+      authStore.logout()
       router.push('/login')
-      console.log('Logout successfully')
     }
 
     return {
