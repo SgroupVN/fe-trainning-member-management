@@ -7,10 +7,14 @@ module.exports = {
       fontFamily: {
         sans: ['Noto Sans JP', 'Sans-serif'],
       },
+      colors: {
+        popup: 'rgba(26,27,40,0.78)',
+        header: '#424242',
+      },
     },
   },
   variants: {
     extend: {},
   },
-  plugins: [require('@tailwindcss/forms')],
+  plugins: [require('@tailwindcss/forms'), require('@headlessui/tailwindcss')],
 }
