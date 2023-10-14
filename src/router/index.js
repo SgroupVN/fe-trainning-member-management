@@ -8,6 +8,7 @@ const routes = [
     children: [
       {
         path: '',
+        name: 'Home',
         component: () => import('@/views/dashboard/Home.vue'),
       },
       {
@@ -22,11 +23,8 @@ const routes = [
       },
       {
         path: 'polls',
-        name: 'polls',
-      },
-      {
-        path: 'polls/:id',
-        name: 'poll detail',
+        name: 'poll-list',
+        component: () => import('@/views/dashboard/polls/PollList.vue'),
       },
       {
         path: 'settings',
@@ -49,7 +47,7 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   scrollBehavior() {
-    return { top: 0 }
+    // return { top: 0 }
   },
   routes,
 })
