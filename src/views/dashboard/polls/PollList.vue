@@ -7,27 +7,29 @@ import CaretDownIcon from '@/components/icons/CaretDownIcon.vue'
 import PlusIcon from '@/components/icons/PlusIcon.vue'
 import Pagination from '@/components/pagination/Pagination.vue'
 import Summary from '@/components/pagination/Summary.vue'
-import UserPopup from '@/components/popup/UserPopup.vue'
+import PollPopup from '@/components/popup/PollPopup.vue'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore, useUsersStore } from '@/store'
+import { useAuthStore, usePollsStore, usePollStore } from '@/store'
 import { storeToRefs } from 'pinia'
 import { notify } from '@kyvg/vue3-notification'
+import EditPollPopup from '@/components/popup/EditPollPopup.vue'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
-const users = useUsersStore()
-const { items, total, page, query, itemPerPage } = storeToRefs(users)
+const polls = usePollsStore()
+const { items, total, page, query, itemPerPage } = storeToRefs(polls)
 
 const selectAll = ref(false)
 const togglePopup = ref(false)
+const toggleEditPopup = ref(false)
 
-users.page = route.query.page ?? 1
-users.itemPerPage = route.query.limit ?? 10
-users.query = route.query.query ?? ''
+polls.page = route.query.page ?? 1
+polls.itemPerPage = route.query.limit ?? 10
+polls.query = route.query.query ?? ''
 
-users.get(auth.token)
+polls.get(auth.token)
 
 function onPageChange(type, payload) {
   const routeChange = {
@@ -43,22 +45,30 @@ function onPageChange(type, payload) {
   })
 }
 
-async function deleteUser(id) {
+async function deletePoll(id) {
   if (id === !auth.user.id) return
-  const res = await users.delete(auth.token, id)
+  const res = await polls.delete(auth.token, id)
   if (res) {
+    polls.get(auth.token)
     notify({
       type: 'success',
       title: 'Success!',
-      text: res.data.message,
+      text: res.message,
     })
   }
+}
+
+function editPoll(id) {
+  const poll = usePollStore()
+  if (poll.poll.id !== id) poll.get(auth.token, id)
+  toggleEditPopup.value = true
 }
 </script>
 
 <template>
   <div class="flex justify-between px-4 mt-4 sm:px-8">
-    <UserPopup :is-show="togglePopup" @toggle="togglePopup = false" @data-updated="users.get(auth.token)" />
+    <PollPopup :is-show="togglePopup" @toggle="togglePopup = false" @data-updated="polls.get(auth.token)" />
+    <EditPollPopup :is-show="toggleEditPopup" @toggle="toggleEditPopup = false" />
 
     <!-- Title -->
     <h2 class="text-2xl text-gray-600">User List</h2>
@@ -69,14 +79,14 @@ async function deleteUser(id) {
       <svg xmlns="http://www.w3.org/2000/svg" class="h-2 w-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
-      <span class="text-gray-600">Users</span>
+      <span class="text-gray-600">Polls</span>
     </div>
   </div>
 
   <!-- UserList start -->
   <div class="p-4 mt-8 sm:px-8 sm:py-4">
-    <div class="bg-white rounded">
-      <div class="px-4 pt-4 flex justify-between">
+    <div class="p-4 bg-white rounded">
+      <div class="flex justify-between">
         <!-- Search Input -->
         <div>
           <div class="relative text-gray-400">
@@ -109,62 +119,54 @@ async function deleteUser(id) {
       <table class="w-full mt-2 text-gray-500">
         <thead class="border-b">
           <tr>
-            <th class="p-2 pl-4 text-left text-gray-600">
+            <th class="p-2 text-left text-gray-600">
               <input
                 v-model="selectAll"
                 type="checkbox"
                 class="h-5 w-5 text-blue-500 border-gray-300 rounded cursor-pointer focus:ring-0"
               />
             </th>
-            <th class="text-left text-gray-600">USER</th>
-            <th class="text-left text-gray-600">ROLE</th>
-            <th class="text-left text-gray-600">STATUS</th>
-            <th class="text-left text-gray-600">JOIN DATE</th>
-            <th class="text-right text-gray-600 pr-4">ACTIONS</th>
+            <th class="text-left text-gray-600">NAME</th>
+            <th class="text-left text-gray-600">CREATED AT</th>
+            <th class="text-left text-gray-600">CREATED BY</th>
+            <th class="text-right text-gray-600">ACTIONS</th>
           </tr>
         </thead>
-
-        <!-- Body -->
         <tbody class="divide-y divide-gray-200">
-          <tr v-for="user in items" :key="user.id">
-            <td class="pl-4 w-11">
+          <tr v-for="poll in items" :key="poll.id">
+            <td class="p-2">
               <input
                 type="checkbox"
                 class="h-5 w-5 text-blue-500 border-gray-300 rounded cursor-pointer focus:ring-0"
                 :checked="selectAll"
               />
             </td>
-            <td class="flex items-center py-4 w-80">
-              <div class="w-10">
-                <img
-                  v-if="user.avatar"
-                  class="inline-block h-12 w-12 rounded-full ring-2 ring-white"
-                  :src="user.avatar"
-                  :alt="user.name"
-                />
-                <UserIcon v-else class="inline-block h-10 w-10 rounded-full ring-2 ring-black" />
+            <td>
+              <div>
+                <a href="#" class="text-gray-600 font-bolder" @click.prevent="editPoll(poll.id)">{{ poll.name }}</a>
               </div>
-              <div class="px-4 w-[20rem] overflow-hidden cursor-pointer">
-                <div
-                  class="text-gray-600 font-bolder w-[20rem] block overflow-hidden whitespace-nowrap text-ellipsis"
-                  @click="$router.push({ name: 'user-detail', params: { id: user.id } })"
-                >
-                  {{ user.name }}
-                </div>
-                <div class="font-bold text-sm w-[20rem] overflow-hidden whitespace-nowrap text-ellipsis">
-                  {{ user.email }}
+            </td>
+            <!-- Created At -->
+            <td>{{ poll.createdAt }}</td>
+
+            <!-- Created By -->
+            <td class="flex items-center py-4">
+              <img
+                v-if="poll.createdBy.avatar"
+                class="inline-block h-12 w-12 rounded-full ring-2 ring-white"
+                :src="poll.createdBy.avatar"
+                :alt="poll.createdBy.username"
+              />
+              <UserIcon v-else class="inline-block h-10 w-10 rounded-full ring-2 ring-black" />
+              <div class="px-4">
+                <div>
+                  <a href="#" class="text-gray-600 font-bolder">{{ poll.createdBy.name || 'ass min' }}</a>
                 </div>
               </div>
             </td>
 
-            <!--  -->
-            <td class="w-20">TODO</td>
-            <td class="w-20">
-              <span v-if="user.isActive" class="px-2 py-1 rounded text-xs text-white bg-green-500">Active</span>
-              <span v-else class="px-2 py-1 rounded text-xs text-white bg-red-500">TODO</span>
-            </td>
-            <td class="w-24">{{ user.createdAt ? user.createdAt.split('T')[0] : '' }}</td>
-            <td class="text-right pr-4 w-32">
+            <!-- Actions -->
+            <td class="text-right">
               <Menu as="div" class="relative inline-block text-left">
                 <div>
                   <MenuButton
@@ -193,6 +195,7 @@ async function deleteUser(id) {
                             active ? 'bg-gray-400 text-white' : 'text-gray-900',
                             'group flex rounded-md items-center w-full px-2 py-2 text-sm',
                           ]"
+                          @click="editPoll(poll.id)"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -211,13 +214,13 @@ async function deleteUser(id) {
                           Edit
                         </button>
                       </MenuItem>
-                      <MenuItem v-if="user.id !== auth.user.id" v-slot="{ active }">
+                      <MenuItem v-slot="{ active }">
                         <button
                           :class="[
                             active ? 'bg-red-400 text-white' : 'text-gray-900',
                             'group flex rounded-md items-center w-full px-2 py-2 text-sm',
                           ]"
-                          @click="deleteUser(user.id)"
+                          @click="deletePoll(poll.id)"
                         >
                           <TrashBin />
                           Delete
@@ -230,16 +233,18 @@ async function deleteUser(id) {
             </td>
           </tr>
         </tbody>
-        <tfoot class="border-gray-200 border-t">
+
+        <!-- Table Footer -->
+        <tfoot>
           <tr>
-            <td colspan="7" class="py-2 px-4">
+            <td colspan="7" class="py-2">
               <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
-                  <Summary :page="users.page" :items-per-page="users.itemPerPage" :total="total" />
+                  <Summary :total="total" />
                 </div>
                 <div>
                   <Pagination
-                    :total="users.total"
+                    :total="total"
                     @prev="onPageChange(-1)"
                     @current-change="onPageChange(true, $event)"
                     @next="onPageChange(1)"

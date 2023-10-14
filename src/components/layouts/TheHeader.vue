@@ -77,8 +77,8 @@ export default {
     const router = useRouter()
     const logout = () => {
       localStorage.removeItem('accessToken')
+      localStorage.removeItem('userData')
       router.push('/login')
-      console.log('Logout successfully')
     }
 
     return {

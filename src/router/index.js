@@ -8,12 +8,27 @@ const routes = [
     children: [
       {
         path: '',
+        name: 'Home',
         component: () => import('@/views/dashboard/Home.vue'),
       },
       {
         path: 'users',
         name: 'user-list',
         component: () => import('@/views/dashboard/users/UserList.vue'),
+      },
+      {
+        path: 'users/:id',
+        name: 'user-detail',
+        component: () => import('@/views/dashboard/users/UserDetail.vue'),
+      },
+      {
+        path: 'polls',
+        name: 'poll-list',
+        component: () => import('@/views/dashboard/polls/PollList.vue'),
+      },
+      {
+        path: 'settings',
+        name: 'settings',
       },
     ],
   },
@@ -22,14 +37,26 @@ const routes = [
     name: 'login',
     component: () => import('@/views/Login.vue'),
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not found',
+    component: () => import('@/views/NotFound.vue'),
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   scrollBehavior() {
-    return { top: 0 }
+    // return { top: 0 }
   },
   routes,
+})
+
+router.beforeEach((to) => {
+  const token = localStorage.getItem('accessToken')
+
+  if (to.name !== 'login' && to.name !== 'not found' && !token) return '/login'
+  if (token && to.name === 'login') return '/'
 })
 
 export default router

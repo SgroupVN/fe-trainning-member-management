@@ -1,14 +1,5 @@
-import { defineStore } from 'pinia'
-
-export const useCounterStore = defineStore('counter', {
-  state: () => {
-    return {
-      count: 0,
-    }
-  },
-  actions: {
-    increment() {
-      this.count++
-    },
-  },
-})
+export * from './auth'
+export * from './user'
+export * from './users'
+export * from './polls'
+export * from './poll'
